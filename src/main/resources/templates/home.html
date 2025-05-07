@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: header('Ana Sayfa')">
+</head>
+<body>
+    <div th:replace="fragments/layout :: navbar"></div>
+
+    <div class="container">
+        <div class="welcome-box">
+            <h1>Hoş Geldiniz</h1>
+            <p>En yeni filmleri keşfedin, favorilerinizi kaydedin.</p>
+        </div>
+    </div>
+
+    <div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 
