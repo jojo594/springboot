@@ -3,22 +3,24 @@
 <head th:replace="fragments/layout :: header('Giriş Yap')">
 </head>
 <body>
-    <div th:replace="fragments/layout :: navbar"></div>
+<div th:replace="fragments/layout :: navbar"></div>
 
-    <h2>Giriş Yap</h2>
-    
-    <div th:if="${error}" class="error" th:text="${error}"></div>
-    
-    <form th:action="@{/auth/login}" method="post">
-        <input type="email" name="email" th:placeholder="'E-posta'" required>
-        <input type="password" name="password" th:placeholder="'Şifre'" required>
-        <button type="submit">Giriş Yap</button>
-    </form>
-    
-    <div>
-        <a th:href="@{/auth/register}">Hesabınız yok mu? Kayıt olun</a>
-    </div>
+<h2>Giriş Yap</h2>
 
-    <div th:replace="fragments/layout :: footer"></div>
+<div th:if="${param.error}" class="error">Geçersiz e-posta veya şifre!</div>
+<div th:if="${param.logout}" class="error">Başarıyla çıkış yapıldı.</div>
+<div th:if="${error}" class="error" th:text="${error}"></div>
+
+<form th:action="@{/auth/login-process}" method="post">
+    <input type="email" name="username" th:placeholder="'E-posta'" required>
+    <input type="password" name="password" th:placeholder="'Şifre'" required>
+    <button type="submit">Giriş Yap</button>
+</form>
+
+<div>
+    <a th:href="@{/auth/register}">Hesabınız yok mu? Kayıt olun</a>
+</div>
+
+<div th:replace="fragments/layout :: footer"></div>
 </body>
-</html> 
+</html>
