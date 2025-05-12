@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/layout :: header('Admin Panel - İzleme Listeleri')">
+</head>
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Admin Panel - İzleme Listeleri Yönetimi</h2>
+        <div>
+            <a th:href="@{/admin/users}" class="btn btn-primary">Kullanıcı Yönetimi</a>
+        </div>
+    </div>
+    
+    <!-- Bildirim mesajları -->
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h4>Tüm İzleme Listeleri</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Liste Adı</th>
+                            <th>Açıklama</th>
+                            <th>Kullanıcı</th>
+                            <th>Film Sayısı</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="watchlist : ${watchlists}">
+                            <td th:text="${watchlist.id}"></td>
+                            <td th:text="${watchlist.name}"></td>
+                            <td th:text="${watchlist.description}"></td>
+                            <td>
+                                <span th:text="${watchlist.user.username}"></span>
+                                <small th:text="'(' + ${watchlist.user.email} + ')'"></small>
+                            </td>
+                            <td th:text="${watchlist.movies.size()}"></td>
+                            <td>
+                                <!-- İzleme Listesi Detayı -->
+                                <a th:href="@{/watchlists/{id}(id=${watchlist.id})}" class="btn btn-sm btn-info">
+                                    Görüntüle
+                                </a>
+                                
+                                <!-- Silme Butonu -->
+                                <button class="btn btn-sm btn-danger" 
+                                        data-bs-toggle="modal" 
+                                        th:data-bs-target="'#deleteModal-' + ${watchlist.id}">
+                                    Sil
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Silme Modalları -->
+<div th:each="watchlist : ${watchlists}" th:id="'deleteModal-' + ${watchlist.id}" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">İzleme Listesi Sil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><span th:text="${watchlist.name}"></span> adlı izleme listesini silmek istediğinizden emin misiniz?</p>
+                <p><strong>Kullanıcı:</strong> <span th:text="${watchlist.user.username}"></span></p>
+                <p class="text-danger">Bu işlem geri alınamaz!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <form th:action="@{/admin/watchlists/{id}/delete(id=${watchlist.id})}" method="post">
+                    <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 

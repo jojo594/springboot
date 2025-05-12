@@ -43,4 +43,16 @@ public class KullaniciAraciImpl implements KullaniciAraci {
     public void kullaniciSil(int id) {
         kullaniciRepo.deleteById(id);
     }
+    
+    @Override
+    public Kullanici kullaniciGuncelle(Kullanici kullanici) {
+        // varolan kullanıcıyı bul (eski)
+        Optional<Kullanici> existingOptional = kullaniciRepo.findById(kullanici.getId());
+        if (!existingOptional.isPresent()) {
+            return null;
+        }
+        
+        // yeni kullanıcıyı kaydet
+        return kullaniciRepo.save(kullanici);
+    }
 }

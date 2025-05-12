@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: header(${watchlist.name})">
+</head>
+<body>
+    <div th:replace="fragments/layout :: navbar"></div>
+
+    <div class="container mt-4">
+        <!-- Success and Error messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Watchlist header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <!-- Admin için farklı breadcrumb -->
+                        <li class="breadcrumb-item" th:if="${isAdmin}"><a th:href="@{/admin/watchlists}">Admin - İzleme Listeleri</a></li>
+                        <!-- Normal kullanıcı için breadcrumb -->
+                        <li class="breadcrumb-item" th:unless="${isAdmin}"><a th:href="@{/watchlists}">İzleme Listeleri</a></li>
+                        <li class="breadcrumb-item active" aria-current="page" th:text="${watchlist.name}">Liste Adı</li>
+                    </ol>
+                </nav>
+                <h2 th:text="${watchlist.name}">Liste Adı</h2>
+                <p th:if="${watchlist.description != null && !watchlist.description.empty}" 
+                   th:text="${watchlist.description}">Açıklama</p>
+                <p>
+                    <small class="text-muted" th:text="${watchlist.movies.size()} + ' film'">0 film</small>
+                    <!-- Admin için kullanıcı bilgisi göster -->
+                    <span th:if="${isAdmin}" class="ms-3 badge bg-info text-dark">
+                        Kullanıcı: <span th:text="${watchlist.user.username}"></span>
+                    </span>
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                <!-- Admin dışındakiler için film ekleme butonu -->
+                <a th:unless="${isAdmin}" th:href="@{/search}" class="btn btn-primary">Film Arayarak Ekle</a>
+                <!-- Admin için geri butonu -->
+                <a th:if="${isAdmin}" th:href="@{/admin/watchlists}" class="btn btn-secondary me-2">Admin Paneline Dön</a>
+                <!-- Admin için silme butonu -->
+                <button th:if="${isAdmin}" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteWatchlistModal">
+                    İzleme Listesini Sil
+                </button>
+            </div>
+        </div>
+
+        <!-- Movies listing -->
+        <div class="row" th:if="${!movies.empty}">
+            <div class="col-md-4 mb-4" th:each="movie : ${movies}">
+                <div class="card h-100">
+                    <img class="card-img-top" th:if="${movie.posterPath != null}" 
+                         th:src="'https://image.tmdb.org/t/p/w500' + ${movie.posterPath}" alt="Film Posteri">
+                    <div class="card-img-top bg-light text-center py-5" th:if="${movie.posterPath == null}">
+                        <span>Görsel yok</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${movie.title}">Film Başlığı</h5>
+                        <p class="card-text text-muted" th:if="${movie.releaseDate != null}" 
+                           th:text="${#dates.format(movie.releaseDate, 'yyyy')}">Yıl</p>
+                        <p class="card-text" th:if="${movie.overview != null && !movie.overview.empty}" 
+                           th:text="${#strings.abbreviate(movie.overview, 150)}">Özet</p>
+                        <p class="card-text" th:if="${movie.overview == null || movie.overview.empty}">
+                            Bu film için özet bulunmamaktadır.
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <span class="badge bg-warning text-dark" th:if="${movie.voteAverage != null}" 
+                              th:text="${movie.voteAverage} + ' / 10'">Puan</span>
+                        <form th:action="@{/watchlists/{watchlistId}/remove/{movieId}(watchlistId=${watchlist.id}, movieId=${movie.tmdbId})}" 
+                              method="post" class="ms-auto">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Listeden Çıkar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No movies message -->
+        <div class="row" th:if="${movies.empty}">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <p>Bu izleme listesinde henüz film bulunmuyor.</p>
+                    <p th:unless="${isAdmin}">Film eklemek için "Film Arayarak Ekle" butonuna tıklayın.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Admin için izleme listesi silme modalı -->
+    <div th:if="${isAdmin}" class="modal fade" id="deleteWatchlistModal" tabindex="-1" aria-labelledby="deleteWatchlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteWatchlistModalLabel">İzleme Listesi Sil</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><span th:text="${watchlist.name}"></span> adlı izleme listesini silmek istediğinizden emin misiniz?</p>
+                    <p><strong>Kullanıcı:</strong> <span th:text="${watchlist.user.username}"></span></p>
+                    <p class="text-danger">Bu işlem geri alınamaz!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <form th:action="@{/admin/watchlists/{id}/delete(id=${watchlist.id})}" method="post">
+                        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 

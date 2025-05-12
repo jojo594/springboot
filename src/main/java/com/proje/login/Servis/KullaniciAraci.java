@@ -11,4 +11,5 @@ public interface KullaniciAraci {
     List<Kullanici> tumKullanicilar();
     Kullanici emailGuncelle(Kullanici kullanici);
     void kullaniciSil(int id);
+    Kullanici kullaniciGuncelle(Kullanici kullanici);
 }

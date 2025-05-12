@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: header('İzleme Listeleri')">
+</head>
+<body>
+    <div th:replace="fragments/layout :: navbar"></div>
+
+    <div class="container mt-4">
+        <!-- Success and Error messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h2>İzleme Listelerim</h2>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-primary" id="btnCreateWatchlist">
+                    <i class="bi bi-plus-circle"></i> Yeni Liste Oluştur
+                </button>
+            </div>
+        </div>
+
+        <!-- Watchlists listing -->
+        <div class="row" th:if="${!watchlists.empty}">
+            <div class="col-md-4 mb-4" th:each="watchlist : ${watchlists}">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${watchlist.name}">Liste İsmi</h5>
+                        <p class="card-text" th:text="${watchlist.description}">Açıklama</p>
+                        <p class="card-text">
+                            <small class="text-muted" th:text="${watchlist.movies.size()} + ' film'">0 film</small>
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <a th:href="@{/watchlists/{id}(id=${watchlist.id})}" class="btn btn-sm btn-outline-primary">Görüntüle</a>
+                        <form th:action="@{/watchlists/{id}/delete(id=${watchlist.id})}" method="post" onsubmit="return confirm('Bu izleme listesini silmek istediğinize emin misiniz?');">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No watchlists message -->
+        <div class="row" th:if="${watchlists.empty}">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <p>Henüz hiç izleme listesi oluşturmadınız. Yeni bir liste oluşturmak için "Yeni Liste Oluştur" butonuna tıklayın.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Watchlist Modal -->
+    <div class="modal fade" id="createWatchlistModal" tabindex="-1" aria-labelledby="createWatchlistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/watchlists}" th:object="${newWatchlist}" method="post">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="createWatchlistModalLabel">Yeni İzleme Listesi Oluştur</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Hidden inputs for movie adding -->
+                        <input type="hidden" name="movieId" th:if="${addToNewWatchlist}" th:value="${movieId}">
+                        <input type="hidden" name="query" th:if="${query != null}" th:value="${query}">
+                        <input type="hidden" name="page" th:if="${page != null}" th:value="${page}">
+                        <input type="hidden" name="addToNewWatchlist" th:if="${addToNewWatchlist}" value="true">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Liste Adı</label>
+                            <input type="text" class="form-control" id="name" th:field="*{name}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                        <button type="submit" class="btn btn-primary">Oluştur</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daha basit Watchlist Oluşturma Modal -->
+    <div class="modal fade" id="quickCreateModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hızlı Liste Oluştur</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="quickCreateForm" th:action="@{/watchlists}" method="post">
+                        <div class="mb-3">
+                            <label for="quickListName" class="form-label">Liste Adı</label>
+                            <input type="text" class="form-control" id="quickListName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quickListDescription" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="quickListDescription" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Oluştur</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auto-open modal if addToNewWatchlist is true -->
+    <script th:if="${addToNewWatchlist}">
+        document.addEventListener('DOMContentLoaded', function() {
+            var modal = new bootstrap.Modal(document.getElementById('createWatchlistModal'));
+            modal.show();
+        });
+    </script>
+    
+    <!-- Modal işlevleri için script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Yeni Liste Oluştur butonuna tıklandığında hızlı modal'ı aç
+            const btnCreateWatchlist = document.getElementById('btnCreateWatchlist');
+            btnCreateWatchlist.addEventListener('click', function() {
+                const quickModal = new bootstrap.Modal(document.getElementById('quickCreateModal'));
+                quickModal.show();
+            });
+        });
+    </script>
+
+    <div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 

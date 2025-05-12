@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/layout :: header('Profilim')">
+</head>
+<body>
+<div th:replace="fragments/layout :: navbar"></div>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Profilim</h2>
+    
+    <!-- Bildirim mesajları -->
+    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+    <div th:if="${info}" class="alert alert-info" role="alert" th:text="${info}"></div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Profil Bilgilerim</h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/profile/update}" method="post" style="max-width: 100%; margin: 0; box-shadow: none; padding: 0;">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Kullanıcı Adı</label>
+                            <input type="text" class="form-control" id="username" name="username" th:value="${kullanici.username}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">E-posta</label>
+                            <input type="email" class="form-control" id="email" name="email" th:value="${kullanici.email}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="yas" class="form-label">Yaş</label>
+                            <input type="number" class="form-control" id="yas" name="yas" th:value="${kullanici.yas}">
+                        </div>
+                        
+                        <h5 class="mt-4 mb-3">Şifre Değiştir</h5>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Yeni Şifre</label>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Yeni şifrenizi girin">
+                            <small class="form-text text-muted">Şifrenizi değiştirmek istemiyorsanız boş bırakın.</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Şifre Onay</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" placeholder="Yeni şifrenizi tekrar girin">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Bilgilerimi Güncelle</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Hesap Bilgileri</h4>
+                </div>
+                <div class="card-body">
+                    <p><strong>Kullanıcı ID:</strong> <span th:text="${kullanici.id}"></span></p>
+                    <p><strong>Rol:</strong> <span th:text="${kullanici.role}"></span></p>
+                    <p><strong>Son Giriş:</strong> <span th:text="${kullanici.lastLoginDate != null ? #temporals.format(kullanici.lastLoginDate, 'dd/MM/yyyy HH:mm') : 'Bilgi yok'}"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 

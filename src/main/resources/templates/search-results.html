@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="fragments/layout :: header('Arama Sonuçları')">
+</head>
+<body>
+    <div th:replace="fragments/layout :: navbar"></div>
+
+    <div class="container mt-4">
+        <!-- Success and Error messages -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>Arama Sonuçları: <span th:text="${query}"></span></h2>
+                <form action="/search/results" method="get" class="form">
+                    <div class="input-group mb-3">
+                        <input type="text" name="query" class="form-control" 
+                               th:value="${query}" placeholder="Film adı girin..." required>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">Ara</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row" th:if="${results != null && !results.results.empty}">
+            <div class="col-md-4 mb-4" th:each="movie : ${results.results}">
+                <div class="card h-100">
+                    <img class="card-img-top" th:if="${movie.posterPath != null}" 
+                         th:src="${movie.getFullPosterPath()}" alt="Film Posteri">
+                    <div class="card-img-top bg-light text-center py-5" th:if="${movie.posterPath == null}">
+                        <span>Görsel yok</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${movie.title}">Film Başlığı</h5>
+                        <p class="card-text text-muted" th:if="${movie.releaseDate != null && !movie.releaseDate.empty}" 
+                           th:text="${#strings.substring(movie.releaseDate, 0, 4)}">Yıl</p>
+                        <p class="card-text" th:if="${movie.overview != null && !movie.overview.empty}" 
+                           th:text="${#strings.abbreviate(movie.overview, 150)}">Özet</p>
+                        <p class="card-text" th:if="${movie.overview == null || movie.overview.empty}">
+                            Bu film için özet bulunmamaktadır.
+                        </p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <span class="badge bg-warning text-dark" th:text="${movie.voteAverage} + ' / 10'">
+                            Puan
+                        </span>
+                        <div sec:authorize="isAuthenticated()">
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" 
+                                    th:data-bs-target="'#addToWatchlistModal-' + ${movie.id}">
+                                İzleme Listeme Ekle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add to Watchlist Modal for each movie -->
+                <div class="modal fade" th:id="'addToWatchlistModal-' + ${movie.id}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">İzleme Listesine Ekle</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>
+                                    <strong th:text="${movie.title}">Film başlığı</strong> 
+                                    filmini hangi izleme listenize eklemek istiyorsunuz?
+                                </p>
+                                
+                                <!-- This part requires user's watchlists to be loaded into the model -->
+                                <form th:action="@{/watchlists/add}" method="post" th:if="${watchlists != null && !watchlists.empty}">
+                                    <input type="hidden" name="movieId" th:value="${movie.id}">
+                                    <input type="hidden" name="query" th:value="${query}">
+                                    <input type="hidden" name="page" th:value="${currentPage}">
+                                    
+                                    <div class="mb-3">
+                                        <label for="watchlistSelect" class="form-label">İzleme Listesi</label>
+                                        <select class="form-select" id="watchlistSelect" name="watchlistId" required>
+                                            <option value="">Seçiniz...</option>
+                                            <!-- Populate with user's watchlists -->
+                                            <option th:each="wlist : ${watchlists}" 
+                                                    th:value="${wlist.id}" 
+                                                    th:text="${wlist.name}">Liste Adı</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-primary">Ekle</button>
+                                    </div>
+                                </form>
+
+                                <!-- Show this when there are no watchlists -->
+                                <div th:if="${watchlists == null || watchlists.empty}">
+                                    <p class="text-muted mb-3">Henüz hiç izleme listeniz yok.</p>
+                                    <div class="d-grid gap-2">
+                                        <a th:href="@{/watchlists(addMovie=${movie.id}, query=${query}, page=${currentPage})}" 
+                                           class="btn btn-primary">Yeni Liste Oluştur</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" th:if="${results == null || results.results.empty}">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    Aramanıza uygun film bulunamadı.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="row mt-4" th:if="${results != null && results.totalPages > 1}">
+            <div class="col-12">
+                <nav aria-label="Sayfa navigasyonu">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled' : ''">
+                            <a class="page-link" th:href="@{/search/results(query=${query}, page=${currentPage - 1})}" 
+                               tabindex="-1">Önceki</a>
+                        </li>
+                        
+                        <li class="page-item" th:each="i : ${#numbers.sequence(1, results.totalPages > 5 ? 5 : results.totalPages)}"
+                            th:classappend="${i == currentPage} ? 'active' : ''">
+                            <a class="page-link" th:href="@{/search/results(query=${query}, page=${i})}" th:text="${i}"></a>
+                        </li>
+                        
+                        <li class="page-item" th:classappend="${currentPage == results.totalPages} ? 'disabled' : ''">
+                            <a class="page-link" th:href="@{/search/results(query=${query}, page=${currentPage + 1})}">Sonraki</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 

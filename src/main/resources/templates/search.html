@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/layout :: header('Film Ara')">
+</head>
+<body>
+    <div th:replace="fragments/layout :: navbar"></div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="text-center">Film Ara</h2>
+                    </div>
+                    <div class="card-body">
+                        <form action="/search/results" method="get" class="form">
+                            <div class="input-group mb-3">
+                                <input type="text" name="query" class="form-control" 
+                                       placeholder="Film adı girin..." required>
+                                <div class="input-group-append">
+                                    <button class="btn btn-primary" type="submit">Ara</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="fragments/layout :: footer"></div>
+</body>
+</html> 
