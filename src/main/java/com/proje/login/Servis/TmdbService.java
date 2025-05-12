@@ -1,5 +1,6 @@
 package com.proje.login.Servis;
 
+import com.proje.login.DTO.GenreListDTO;
 import com.proje.login.DTO.MovieDTO;
 import com.proje.login.DTO.MovieSearchResultDTO;
 import com.proje.login.Repository.MovieRepository;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -67,6 +69,61 @@ public class TmdbService {
                 HttpMethod.GET, 
                 entity, 
                 MovieDTO.class);
+        
+        return response.getBody();
+    }
+    
+    public GenreListDTO getMovieGenres() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + apiKey);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        String url = baseUrl + "/genre/movie/list?language=tr-TR";
+        
+        ResponseEntity<GenreListDTO> response = restTemplate.exchange(
+                url, 
+                HttpMethod.GET, 
+                entity, 
+                GenreListDTO.class);
+        
+        return response.getBody();
+    }
+    
+    public MovieSearchResultDTO discoverMovies(Integer year, String withGenres, String sortBy, int page) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("accept", "application/json");
+        headers.set("Authorization", "Bearer " + apiKey);
+        
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl + "/discover/movie")
+                .queryParam("include_adult", false)
+                .queryParam("language", "tr-TR")
+                .queryParam("page", page);
+        
+        if (year != null) {
+            builder.queryParam("primary_release_year", year);
+        }
+        
+        if (withGenres != null && !withGenres.isEmpty()) {
+            builder.queryParam("with_genres", withGenres);
+        }
+        
+        if (sortBy != null && !sortBy.isEmpty()) {
+            builder.queryParam("sort_by", sortBy);
+        } else {
+            builder.queryParam("sort_by", "popularity.desc");
+        }
+        
+        String url = builder.toUriString();
+        
+        ResponseEntity<MovieSearchResultDTO> response = restTemplate.exchange(
+                url, 
+                HttpMethod.GET, 
+                entity, 
+                MovieSearchResultDTO.class);
         
         return response.getBody();
     }

@@ -62,6 +62,15 @@ form {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+/* Films sayfası için form istisna */
+.filter-form {
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
 input {
     width: 100%;
     padding: 0.5rem;
@@ -247,4 +256,44 @@ footer {
 .modal-footer {
     border-top: 1px solid #dee2e6;
     padding: 15px;
+}
+
+/* Film Sayfası Stilleri */
+.filter-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 16px;
+}
+
+.filter-select:focus {
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+    outline: none;
+}
+
+.filter-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    height: 42px;  /* Fixed height to align with dropdowns */
+    transition: background-color 0.2s;
+}
+
+.filter-button:hover {
+    background-color: #3a506b;
+}
+
+@media (max-width: 767px) {
+    .filter-button {
+        margin-top: 10px;
+    }
 } 
